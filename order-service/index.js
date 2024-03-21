@@ -1,6 +1,7 @@
 // order-service/app.js
 const express = require("express");
-const amqplib = require("amqplib");
+const redis = require("redis");
+// const amqplib = require("amqplib");
 const app = express();
 const port = 3001;
 
@@ -8,22 +9,22 @@ const port = 3001;
 const orders = [];
 
 // RabbitMQ connection
-let channel;
+// let channel;
 
 // Connect to RabbitMQ
-const connectToRabbitMQ = async () => {
-  try {
-    const connection = await amqplib.connect("amqp://localhost");
-    channel = await connection.createChannel();
-    const queue = "payment_queue";
-    await channel.assertQueue(queue, { durable: false });
-    console.log("Connected to RabbitMQ");
-  } catch (error) {
-    console.error("Error connecting to RabbitMQ:", error);
-  }
-};
+// const connectToRabbitMQ = async () => {
+//   try {
+//     const connection = await amqplib.connect("amqp://localhost");
+//     channel = await connection.createChannel();
+//     const queue = "payment_queue";
+//     await channel.assertQueue(queue, { durable: false });
+//     console.log("Connected to RabbitMQ");
+//   } catch (error) {
+//     console.error("Error connecting to RabbitMQ:", error);
+//   }
+// };
 
-connectToRabbitMQ();
+// connectToRabbitMQ();
 
 // Routes
 app.get("/orders", (req, res) => {
@@ -47,4 +48,12 @@ app.post("/orders", (req, res) => {
 
 app.listen(port, () => {
   console.log(`Order Service running on port ${port}`);
+});
+
+const channel = "message_queue";
+const subscriber = redis.createClient();
+subscriber.subscribe(channel);
+console.log("Waiting for messages...");
+subscriber.on("message", (channel, message) => {
+  console.log(`Received: ${message}`);
 });

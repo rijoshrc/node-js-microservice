@@ -1,8 +1,11 @@
 // user-service/app.js
 const express = require("express");
+const redis = require("redis");
 const app = express();
 const axios = require("axios");
 const port = 3000;
+
+const publisher = redis.createClient();
 
 // In-memory storage for simplicity
 const users = [
@@ -16,6 +19,14 @@ const users = [
 // Routes
 app.get("/users", (req, res) => {
   res.json(users);
+});
+app.get("/test", (req, res) => {
+  const channel = "message_queue";
+  const message = "Hello, Redis!";
+  publisher.publish(channel, message);
+  console.log(`Sent: ${message}`);
+  // publisher.quit();
+  res.json({ status: true });
 });
 
 app.get("/users/:id", async (req, res) => {
